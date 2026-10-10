@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import seedProducts from '../../../../server/data/products.json';
-import { CATEGORIES, formatCOP, LOW_STOCK_THRESHOLD } from '../domain/product';
+import {
+  CATEGORIES,
+  filterProducts,
+  formatCOP,
+  LOW_STOCK_THRESHOLD,
+  toProductView,
+  validateProduct,
+} from '../domain/product';
 
-/**
- * Pruebas unitarias de EJEMPLO (ya vienen dadas) para que `npm test` corra desde el inicio.
- * Muestran el estilo esperado: describe / it / expect, sin red ni pantallas.
- */
-describe('datos semilla de la API (ejemplo)', () => {
+describe('datos semilla de la API', () => {
   it('trae 8 productos con ids 1 a 8', () => {
     expect(seedProducts).toHaveLength(8);
     expect(seedProducts.map((item) => item.id)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
@@ -22,11 +25,15 @@ describe('datos semilla de la API (ejemplo)', () => {
 
   it('incluye productos agotados y con pocas unidades para probar las etiquetas', () => {
     expect(seedProducts.some((item) => item.stock === 0)).toBe(true);
-    expect(seedProducts.some((item) => item.stock > 0 && item.stock < LOW_STOCK_THRESHOLD)).toBe(true);
+    expect(
+      seedProducts.some(
+        (item) => item.stock > 0 && item.stock < LOW_STOCK_THRESHOLD,
+      ),
+    ).toBe(true);
   });
 });
 
-describe('formatCOP (ejemplo)', () => {
+describe('formatCOP', () => {
   it('separa los miles con punto y antepone el signo de pesos', () => {
     expect(formatCOP(1250000)).toBe('$ 1.250.000');
     expect(formatCOP(8500)).toBe('$ 8.500');
@@ -34,19 +41,80 @@ describe('formatCOP (ejemplo)', () => {
   });
 });
 
-/**
- * TODO(Parte 5): agregue sus pruebas UNITARIAS aquí (o en archivos nuevos dentro de __tests__/).
- * Mínimo dos de estas funciones del dominio: `validateProduct`, `toProductView` o `filterProducts`.
- * Quite el `.todo` cuando escriba el cuerpo de cada una.
- */
 describe('validateProduct', () => {
-  it.todo('rechaza un nombre vacío, un precio menor o igual que 0 y una categoría no permitida');
+  it('rechaza un nombre vacío, un precio menor o igual que 0 y una categoría no permitida', () => {
+    const result = validateProduct({
+      name: '   ',
+      price: 0,
+      category: 'Otra',
+      stock: -1,
+    });
+
+    expect(result.isValid).toBe(false);
+    expect(result.errors.name).toBeDefined();
+    expect(result.errors.price).toBeDefined();
+    expect(result.errors.category).toBeDefined();
+    expect(result.errors.stock).toBeDefined();
+  });
 });
 
 describe('toProductView', () => {
-  it.todo('formatea el precio en pesos y marca «Agotado» y «Pocas unidades»');
+  it('formatea el precio en pesos y marca «Agotado» y «Pocas unidades»', () => {
+    const outOfStock = toProductView({
+      id: 1,
+      name: ' Producto agotado ',
+      price: 1250000,
+      category: 'Hogar',
+      stock: 0,
+    });
+
+    expect(outOfStock.name).toBe('Producto agotado');
+    expect(outOfStock.priceLabel).toBe('$ 1.250.000');
+    expect(outOfStock.stockLabel).toBe('Agotado');
+    expect(outOfStock.isOutOfStock).toBe(true);
+    expect(outOfStock.isLowStock).toBe(false);
+
+    const lowStock = toProductView({
+      id: 2,
+      name: 'Producto con pocas unidades',
+      price: 8500,
+      category: 'Snacks',
+      stock: 3,
+    });
+
+    expect(lowStock.priceLabel).toBe('$ 8.500');
+    expect(lowStock.stockLabel).toBe('Pocas unidades');
+    expect(lowStock.isOutOfStock).toBe(false);
+    expect(lowStock.isLowStock).toBe(true);
+  });
 });
 
 describe('filterProducts', () => {
-  it.todo('filtra por texto sin distinguir mayúsculas y por categoría exacta');
+  it('filtra por texto sin distinguir mayúsculas y por categoría exacta', () => {
+    const products = seedProducts.map((item) => ({ ...item }));
+
+    const bySearch = filterProducts(products, {
+      search: 'AGUA',
+      category: '',
+    });
+
+    expect(bySearch).toHaveLength(1);
+    expect(bySearch[0].name).toBe('Agua mineral 600 ml');
+
+    const byCategory = filterProducts(products, {
+      search: '',
+      category: 'Bebidas',
+    });
+
+    expect(byCategory).toHaveLength(3);
+    expect(byCategory.every((item) => item.category === 'Bebidas')).toBe(true);
+
+    const combined = filterProducts(products, {
+      search: 'jugo',
+      category: 'Bebidas',
+    });
+
+    expect(combined).toHaveLength(1);
+    expect(combined[0].name).toBe('Jugo de naranja 1 L');
+  });
 });

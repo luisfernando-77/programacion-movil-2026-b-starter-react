@@ -2,16 +2,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { startTestServer } from './test-server';
 
-/**
- * Pruebas de la API de productos.
- *
- * Patrón:
- *  1. `startTestServer()` levanta la API en un puerto libre antes de cada prueba.
- *  2. `fetch` llama a la API.
- *  3. Se comprueba el código de estado y el cuerpo.
- *  4. `close()` cierra el servidor al terminar.
- */
-
 let baseUrl = '';
 let close: () => Promise<void>;
 
@@ -54,12 +44,10 @@ describe('POST /api/products', () => {
     const body = await response.json();
 
     expect(response.status).toBe(400);
-
     expect(body).toEqual({
       error: expect.any(String),
       details: expect.any(Array),
     });
-
     expect(body.details.length).toBeGreaterThan(0);
   });
 });
@@ -70,7 +58,6 @@ describe('GET /api/products/:id', () => {
     const body = await response.json();
 
     expect(response.status).toBe(404);
-
     expect(body).toEqual({
       error: expect.any(String),
       details: expect.any(Array),
