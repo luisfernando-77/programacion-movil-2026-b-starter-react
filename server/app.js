@@ -208,6 +208,7 @@ function createApp() {
     });
   });
 
+  // eslint-disable-next-line no-unused-vars -- Express exige los 4 parámetros para reconocerlo.
   app.use((err, _req, res, _next) => {
     if (err && err.type === 'entity.parse.failed') {
       return res.status(400).json({
