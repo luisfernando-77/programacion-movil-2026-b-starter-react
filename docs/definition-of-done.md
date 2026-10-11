@@ -27,5 +27,5 @@ The Product Catalog feature is considered done when all applicable requirements 
 - [x] README includes the required English sections: `State management decision` and `API error handling`.
 - [x] Development is performed on `feature/catalogo-productos`.
 - [x] Conventional Commits are used during development.
-- [ ] Pull Request opened from `feature/catalogo-productos` to `main` in the student's own fork.
-- [ ] Pull Request description and final checklist reviewed before submission.
+- [x] Pull Request opened from `feature/catalogo-productos` to `main` in the student's own fork.
+- [x] Pull Request description and final checklist reviewed before submission.
