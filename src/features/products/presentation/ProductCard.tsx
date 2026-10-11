@@ -1,21 +1,57 @@
+import {
+  IonBadge,
+  IonItem,
+  IonLabel,
+  IonText,
+} from '@ionic/react';
 import type { ProductView } from '../domain/product';
 
 export interface ProductCardProps {
   product: ProductView;
-  /** Se invoca con el id del producto cuando la persona toca la tarjeta. */
   onSelect?: (id: number) => void;
 }
 
-/**
- * Tarjeta reutilizable de un producto (se usa en la lista).
- *
- * TODO(Parte 3): derivarla de `EmptyState.tsx` (mismo estilo de props tipadas) y construirla con
- * componentes de Ionic (IonItem, IonLabel...), mostrando nombre, categoría, precio y la etiqueta
- * de stock (`stockLabel`), con un aviso visible cuando hay pocas unidades o está agotado.
- * Hoy solo muestra el nombre.
- */
-const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect }) => (
-  <div onClick={() => onSelect?.(product.id)}>{product.name}</div>
-);
+const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  onSelect,
+}) => {
+  const stockColor = product.isOutOfStock
+    ? 'danger'
+    : product.isLowStock
+      ? 'warning'
+      : 'success';
+
+  return (
+    <IonItem
+      button={Boolean(onSelect)}
+      detail={Boolean(onSelect)}
+      onClick={() => onSelect?.(product.id)}
+    >
+      <IonLabel>
+        <h2>{product.name}</h2>
+
+        <p>
+          <IonText color="medium">
+            {product.category}
+          </IonText>
+        </p>
+
+        <p>
+          <strong>{product.priceLabel}</strong>
+        </p>
+
+        <IonBadge color={stockColor}>
+          {product.stockLabel}
+        </IonBadge>
+
+        <p>
+          <IonText color="medium">
+            Stock: {product.stock}
+          </IonText>
+        </p>
+      </IonLabel>
+    </IonItem>
+  );
+};
 
 export default ProductCard;
